@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Песеник</string>
+    <string name="not_song">Нет песен</string>
+    <string name="title_activity_song">SongActivity</string>
+    <string name="action_settings">Настройки</string>
+    <string name="on_black_theme">Включить черную тему?</string>
+
+
+    <string name="pref_default_perionScrollConst">100</string>
+    <string name="pref_title_perionScrollConst">Период скрола в ms</string>
+    <string name="action_search">Поиск</string>
+    <string name="clearSearch">Все песни</string>
+
+
+</resources>
