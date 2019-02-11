@@ -47,12 +47,16 @@ public class MainActivity extends AppCompatActivity {
     private String file_path;
     private boolean searchD=false;
 
-    private static final int WRITE_EXTERNAL_STORAGE = 100;
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        if (requestCode == WRITE_EXTERNAL_STORAGE) {
+        if (requestCode == REQUEST_EXTERNAL_STORAGE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getListSong();
             } else {
@@ -72,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             setTheme(R.style.AppThemeLight);
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE);
+            requestPermissions(PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
         } else {
             getListSong();
         }
@@ -101,8 +105,12 @@ public class MainActivity extends AppCompatActivity {
     {
         File[] files = getFiles(file_path);
         if(files!=null)
-            for(File f: files)
-                listSong.add(new SongModel(file_path+"/"+f.getName(),firstStrFile(file_path+"/"+f.getName())));
+            for(File f: files) {
+                String songName=firstStrFile(f.getAbsolutePath());
+                if(songName!=null)
+                    listSong.add(new SongModel(f.getAbsolutePath(), songName));
+                //listSong.add(new SongModel(file_path+"/"+f.getName(),firstStrFile(file_path+"/"+f.getName())));
+            }
     }
 
     private void getListSong()
@@ -268,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
         List<SongModel> listSong_search = new ArrayList<SongModel>();
         for(SongModel song: listSong)
         {
-            if(song.getSongName().contains(text))
+            if(song.getSongName().toLowerCase().contains(text.toLowerCase()))
             {
                 listSong_search.add(song);
             }

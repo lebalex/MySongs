@@ -1,6 +1,7 @@
 package xyz.lebalex.mysongs;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.opengl.Visibility;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -46,9 +48,11 @@ public class SongActivity extends AppCompatActivity {
     private int perionScroll;
 
     private ScaleGestureDetector scaleGestureDetector;
+    private GestureDetector gestureDetector;
     private TextView songTextView;
     private ScrollView scrollPanel;
     private FloatingActionButton fab;
+    private String songFileName;
 
 
 
@@ -91,6 +95,37 @@ public class SongActivity extends AppCompatActivity {
         }
     }
 
+    public class simpleOnGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+                @Override
+                public boolean onDown(MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    Intent mIntent = new Intent(getApplicationContext(), SongEditActivity.class);
+                    mIntent.putExtra("filename", songFileName);
+                    startActivityForResult(mIntent, 111);
+                    return super.onSingleTapUp(e);
+                }
+
+                @Override
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                                       float velocityY) {
+                    return super.onFling(e1, e2, velocityX, velocityY);
+                }
+
+            }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 111) {
+            if (resultCode == RESULT_OK)
+                songTextView.setText(FileHelper.getFileContext(songFileName));
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,7 +136,7 @@ public class SongActivity extends AppCompatActivity {
             setTheme(R.style.AppThemeLightNoActionBar);
         perionScrollConst=Integer.parseInt(sp.getString("perionScrollConst", getResources().getString(R.string.pref_default_perionScrollConst)));
         setContentView(R.layout.activity_song);
-        String songText = getIntent().getStringExtra("filename");
+        songFileName = getIntent().getStringExtra("filename");
         songTextView = (TextView) findViewById(R.id.songText);
         sizeText = sp.getFloat("fontSize", sizeText);
         songTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sizeText);
@@ -114,16 +149,23 @@ public class SongActivity extends AppCompatActivity {
 
 
 
-        songTextView.setText(getFileContext(songText));
+        songTextView.setText(FileHelper.getFileContext(songFileName));
 
         scaleGestureDetector = new ScaleGestureDetector(this, new simpleOnScaleGestureListener());
+        gestureDetector = new GestureDetector(this, new simpleOnGestureListener());
 
         songTextView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                return scaleGestureDetector.onTouchEvent(event);
+
+                boolean retVal = scaleGestureDetector.onTouchEvent(event);
+                retVal = gestureDetector.onTouchEvent(event) || retVal;
+                return retVal;
+
+                //return scaleGestureDetector.onTouchEvent(event);
             }
         });
+
 
 
         scrollPanel = (ScrollView) findViewById(R.id.scrollPanel);
@@ -195,32 +237,7 @@ public class SongActivity extends AppCompatActivity {
         }, 0, perionScroll);
     }
 
-    private String getFileContext(String fileName) {
-        StringBuilder text = new StringBuilder();
-        if (fileName != null) {
-            File file = new File(fileName);
-            if (file.exists()) {
-                try {
-                    //text.append("<html><body bgcolor=\"black\"><font color=\"white\">");
-                    BufferedReader br = new BufferedReader(new FileReader(file));
-                    String line;
 
-                    while ((line = br.readLine()) != null) {
-                        text.append(line);
-                        text.append('\n');
-                        //text.append("<br>");
-                    }
-                    //text.append("</font></body></html>");
-                    br.close();
-                } catch (Exception e) {
-                }
-
-                return text.toString();
-            } else {
-                return "";
-            }
-        } else return "";
-    }
 
     @Override
     protected void onDestroy() {
