@@ -192,10 +192,6 @@ public class SongActivity extends AppCompatActivity {
             public void onClick(View view) {
                 startScroll = !startScroll;
                 if (startScroll) {
-                    /*сделаем паузу*/
-                    try {
-                        Thread.sleep(1000 * 5);
-                    }catch(Exception e){}
                     startScrollTimer(scrollPanel, fab);
                 }
                 else
@@ -214,6 +210,11 @@ public class SongActivity extends AppCompatActivity {
     }
     private void startScrollTimer(final ScrollView scrollPanel, final FloatingActionButton fab) {
         fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.ic_media_pause));
+        /*сделаем паузу*/
+        try {
+            Thread.sleep(1000 * 5);
+        }catch(Exception e){}
+
         if (mTimer != null) {
             mTimer.cancel();
         }
