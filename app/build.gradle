@@ -6,8 +6,8 @@ android {
         applicationId "xyz.lebalex.mysongs"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 20190205
-        versionName "1.16"
+        versionCode 20200811
+        versionName "1.17"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "mysong-$versionName")
         vectorDrawables.useSupportLibrary = true

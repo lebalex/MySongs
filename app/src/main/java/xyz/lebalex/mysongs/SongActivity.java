@@ -191,8 +191,13 @@ public class SongActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startScroll = !startScroll;
-                if (startScroll)
+                if (startScroll) {
+                    /*сделаем паузу*/
+                    try {
+                        Thread.sleep(1000 * 5);
+                    }catch(Exception e){}
                     startScrollTimer(scrollPanel, fab);
+                }
                 else
                     stopScrollTimer(scrollPanel, fab);
             }
