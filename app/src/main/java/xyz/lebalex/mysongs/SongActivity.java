@@ -1,32 +1,28 @@
 package xyz.lebalex.mysongs;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.opengl.Visibility;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import androidx.preference.PreferenceManager;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -54,6 +50,7 @@ public class SongActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private String songFileName;
 
+    private ActivityResultLauncher<Intent> startActivityIntent;
 
 
 
@@ -106,7 +103,8 @@ public class SongActivity extends AppCompatActivity {
                 public boolean onDoubleTap(MotionEvent e) {
                     Intent mIntent = new Intent(getApplicationContext(), SongEditActivity.class);
                     mIntent.putExtra("filename", songFileName);
-                    startActivityForResult(mIntent, 111);
+                    startActivityIntent.launch(mIntent);
+                    //startActivityForResult(mIntent, 111);
                     return super.onSingleTapUp(e);
                 }
 
@@ -119,13 +117,13 @@ public class SongActivity extends AppCompatActivity {
             }
 
 
-    @Override
+    /*@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 111) {
             if (resultCode == RESULT_OK)
                 songTextView.setText(FileHelper.getFileContext(songFileName));
         }
-    }
+    }*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -198,6 +196,15 @@ public class SongActivity extends AppCompatActivity {
                     stopScrollTimer(scrollPanel, fab);
             }
         });
+        startActivityIntent = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == RESULT_OK)
+                            songTextView.setText(FileHelper.getFileContext(songFileName));
+                    }
+                });
 
     }
 

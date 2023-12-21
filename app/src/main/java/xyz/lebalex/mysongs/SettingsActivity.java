@@ -1,48 +1,19 @@
 package xyz.lebalex.mysongs;
 
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.SharedPreferences;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatDelegate;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
-public class SettingsActivity extends PreferenceActivity {
-
-
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
-
-            if (preference instanceof ListPreference) {
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
-
-            } else {
-                preference.setSummary(stringValue);
-            }
-            return true;
-        }
-    };
-
-    private static void bindPreferenceSummaryToValue(Preference preference) {
-
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
-    }
-
+public class SettingsActivity extends AppCompatActivity  {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,26 +22,28 @@ public class SettingsActivity extends PreferenceActivity {
             setTheme(R.style.AppThemeDark);
         else
             setTheme(R.style.AppThemeLight);
-        setupActionBar();
-        getFragmentManager().beginTransaction()
+
+
+
+        getSupportFragmentManager()
+                .beginTransaction()
                 .replace(android.R.id.content, new SettingsFragment())
                 .commit();
     }
-    private void setupActionBar() {
-        AppCompatDelegate mDelegate = AppCompatDelegate.create(this, null);
-        ActionBar actionBar = mDelegate.getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
-    public static class SettingsFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
 
-            // Load the preferences from an XML resource
-            addPreferencesFromResource(R.xml.pref_settings);
-            bindPreferenceSummaryToValue(findPreference("perionScrollConst"));
+    public static class SettingsFragment extends PreferenceFragmentCompat {
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.pref_settings, rootKey);
+            EditTextPreference editTextPreference=findPreference("perionScrollConst");
+            editTextPreference.setSummary(editTextPreference.getText());
+            editTextPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    preference.setSummary((String)newValue);
+                    return true;
+                }
+            });
         }
 
     }

@@ -1,20 +1,27 @@
 package xyz.lebalex.mysongs;
 
-import android.Manifest;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.os.Build;
-import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.preference.PreferenceManager;
+
+
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.ContextThemeWrapper;
+import androidx.appcompat.view.ContextThemeWrapper;
+
+import android.os.Environment;
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
@@ -25,20 +32,18 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Toast;
+
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.Map;
+import static android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,23 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean searchD=false;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        if (requestCode == REQUEST_EXTERNAL_STORAGE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getListSong();
-            } else {
-                Toast.makeText(this, "Until you grant the permission, we canot display the names", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
+    private ActivityResultLauncher<Intent> startActivityIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,13 +64,36 @@ public class MainActivity extends AppCompatActivity {
         else
             setTheme(R.style.AppThemeLight);
         setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        try {
+            if (Environment.isExternalStorageManager()) {
+                getListSong();
+            } else {
+                Intent intent = new Intent(ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(intent);
+                //startActivityIntent.launch(intent); с ним в исключение падает
+            }
+        }catch(Exception e)
+        {
+            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+            builder.setMessage("Настройки -> Доступ ко всем файлам -> Разрешить").show();
+        }
+        startActivityIntent = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (Environment.isExternalStorageManager())
+                            getListSong();
+                    }
+                });
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
         } else {
             getListSong();
-        }
+        }*/
 
     }
+
 
     /*private String getRootOfInnerSdCardFolder(File file)
     {
@@ -116,12 +128,20 @@ public class MainActivity extends AppCompatActivity {
     private void getListSong()
     {
 
+/*другой метод получения файлов
+        StorageManager storageManager = (StorageManager)getSystemService(STORAGE_SERVICE);
+        List<StorageVolume> storageVolumeList = storageManager.getStorageVolumes();
+        StorageVolume storageVolume = storageVolumeList.get(0);
+        File fileListDir = new File(storageVolume.getDirectory().getPath()+"/Song");
+        File[] fileList = fileListDir.listFiles();
+        long count = Arrays.stream(fileList).count();*/
+
         File[] externalStorageFiles=ContextCompat.getExternalFilesDirs(this,null);
 
         for(File file : externalStorageFiles)
         {
             String path = file.getAbsolutePath();
-            path = path.replaceAll("Android/data/xyz.lebalex.mysongs/files", "Song");
+            path = path.replaceAll("Android/data/xyz.lebalex.mysongs/files", "Song/");
             ///storage/sdcard/Android/data/xyz.lebalex.mysongs/files
 
             //addSong(getRootOfInnerSdCardFolder(file) + "/Song");

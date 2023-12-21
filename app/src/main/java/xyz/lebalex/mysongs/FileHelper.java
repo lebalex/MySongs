@@ -1,22 +1,12 @@
 package xyz.lebalex.mysongs;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Environment;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.widget.EditText;
+import androidx.core.content.ContextCompat;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 
-import static android.support.v4.app.ActivityCompat.startActivityForResult;
+import static androidx.core.app.ActivityCompat.startActivityForResult;
 
 public class FileHelper {
     public static String getFileContext(String fileName) {
